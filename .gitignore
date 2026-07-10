@@ -1,0 +1,26 @@
+# Зависимости
+node_modules/
+
+# Билд
+dist/
+build/
+
+# Временные файлы сервера
+server/temp/
+server/uploads/
+
+# Файлы окружения
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log
+npm-debug.log*

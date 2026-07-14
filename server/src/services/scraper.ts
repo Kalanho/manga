@@ -14,6 +14,7 @@ async function launchBrowser(): Promise<Browser> {
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
+            '--disable-accelerated-2d-canvas',
         ],
     });
     return browser;
@@ -307,10 +308,24 @@ export async function scrapePage(url: string): Promise<ScrapeResult> {
 
         // Загружаем страницу
         console.log('📄 Загружаю страницу...');
-        await page.goto(url, {
-            waitUntil: 'networkidle2',
+        try {
+          await page.goto(url, {
+            waitUntil: 'domcontentloaded',
             timeout: TIMEOUT,
-        });
+          });
+        } catch (err: any) {
+          // Если ошибка сети, пробуем ещё раз
+          if (err.message?.includes('ETIMEDOUT')) {
+            console.log('⚠️ Сетевая ошибка. Повторяю попытку через 2 секунды...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await page.goto(url, {
+              waitUntil: 'domcontentloaded',
+              timeout: TIMEOUT,
+            });
+          } else {
+            throw err; // Если ошибка не сетевая, выбрасываем её дальше
+          }
+        }
 
         const pageTitle = await page.title();
         console.log(`📌 Заголовок: "${pageTitle}"`);
